@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .loading {
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .success-message {
+            display: none;
+        }
+        .success-message.active {
+            display: block;
+        }
+        .ticket-info {
+            background-color: #f8fafc;
+            border-left: 4px solid #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Ticket Analyzer</h1>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <form id="pdfForm" class="space-y-4">
+                    <div class="drop-zone rounded-lg p-8 text-center cursor-pointer" id="dropZone">
+                        <input type="file" id="pdfFile" accept=".pdf" class="hidden">
+                        <div class="space-y-2">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="text-gray-600">Arrastra y suelta tu archivo PDF aquí</p>
+                            <p class="text-sm text-gray-500">o</p>
+                            <button type="button" onclick="document.getElementById('pdfFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Seleccionar archivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="selectedFile" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-md p-4">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <p class="text-sm text-green-800">
+                                    Archivo cargado exitosamente: <span id="fileName" class="font-medium"></span>
+                                </p>
+                            </div>
+                            <p class="mt-2 text-sm text-green-600">
+                                Haz clic en "Analizar PDF" para procesar el archivo.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Analizar PDF
+                    </button>
+                </form>
+            </div>
+
+            <div id="loading" class="loading text-center py-4">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                <p class="mt-2 text-gray-600">Analizando PDF...</p>
+            </div>
+
+            <div id="result" class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Resultado del Análisis</h2>
+                <div class="ticket-info p-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">ID del Ticket:</p>
+                            <p class="font-medium">#35691</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Estado:</p>
+                            <p class="font-medium">Resuelto</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Prioridad:</p>
+                            <p class="font-medium">Normal</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Categoría:</p>
+                            <p class="font-medium">Educación - (EDU)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h3 class="text-lg font-medium mb-2">Descripción del Problema</h3>
+                    <p class="text-gray-700">Problema con el formato de fecha en la columna FECHAPAGO de la fuente 57-LIQ_TRX_FIN-1. Se necesita convertir al formato 2024-12-27, pero la mayoría de las líneas quedan vacías al aplicar los formatos disponibles.</p>
+                </div>
+                <div class="mb-4">
+                    <h3 class="text-lg font-medium mb-2">Solución Propuesta</h3>
+                    <p class="text-gray-700">Se identificó que la columna tiene múltiples formatos (ddMMyyyy.0, ddMyyyy.0, dMMyyyy.0). Se proporcionó una fórmula de transformación para manejar los casos donde el día o mes tienen un solo dígito:</p>
+                    <div class="bg-gray-50 p-3 rounded mt-2">
+                        <code class="text-sm">si(largo(FECHA)=9;concatenar(0;FECHA);FECHA)</code>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Recomendaciones</h3>
+                    <ul class="list-disc pl-5 text-gray-700">
+                        <li>Ajustar los archivos desde origen para que contengan dos dígitos en los valores de día y mes</li>
+                        <li>Usar la fórmula proporcionada para casos donde el día o mes vienen con un solo dígito</li>
+                        <li>Verificar que los registros cargados en la fuente tengan solo los formatos ddMMyyyy.0 o dMMyyyy.0</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const pdfFile = document.getElementById('pdfFile');
+        const selectedFile = document.getElementById('selectedFile');
+        const fileName = document.getElementById('fileName');
+        const form = document.getElementById('pdfForm');
+
+        // Manejar eventos de arrastrar y soltar
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        pdfFile.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'application/pdf') {
+                    fileName.textContent = file.name;
+                    selectedFile.classList.remove('hidden');
+                    dropZone.classList.add('hidden');
+                } else {
+                    alert('Por favor, selecciona un archivo PDF válido');
+                }
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = pdfFile.files[0];
+            if (!file) {
+                alert('Por favor, selecciona un archivo PDF');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            
+            loading.classList.add('active');
+
+            try {
+                // Simular el análisis del PDF
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html> 
